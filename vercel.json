@@ -1,0 +1,10 @@
+{
+  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm build",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://mobugglgakfdjyvoufvj.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vYnVnZ2xnYWtmZGp5dm91ZnZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDM4NjYzOSwiZXhwIjoyMDU5OTYyNjM5fQ.RhJnf9BxVSTwKWFnR_A23zCHvNXGZoc4ujsWjSh4V2U"
+  }
+} 
