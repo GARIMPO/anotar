@@ -69,24 +69,24 @@ export default function PedidoCard({ pedido, onEdit, onDelete }: PedidoCardProps
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div className="space-y-1">
             <h3 className="font-semibold text-lg">{pedido.nome}</h3>
-            <div className="flex items-center gap-2">
+            <div className={`${pedido.status !== 'enviado' ? 'flex flex-col space-y-1' : 'flex items-center gap-2'}`}>
               {pedido.telefone && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto p-0 text-muted-foreground hover:text-primary"
-                  onClick={abrirWhatsApp}
-                >
+                <div className="flex items-center">
                   <Phone className="h-4 w-4 mr-1" />
-                  {pedido.telefone}
-                </Button>
+                  <span 
+                    className="text-muted-foreground hover:text-primary cursor-pointer"
+                    onClick={abrirWhatsApp}
+                  >
+                    {pedido.telefone}
+                  </span>
+                </div>
               )}
               {pedido.email && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Mail className="h-4 w-4" />
+                <div className="flex items-center">
+                  <Mail className="h-4 w-4 mr-1" />
                   <a
                     href={`mailto:${pedido.email}?subject=${encodeURIComponent(`Atualização do seu pedido - ${pedido.nome}`)}&body=${encodeURIComponent(`Olá ${pedido.nome},\n\nAqui é do sistema de pedidos.`)}`}
-                    className="hover:text-primary cursor-pointer"
+                    className="text-muted-foreground hover:text-primary cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault()
                       abrirEmail()
@@ -202,7 +202,9 @@ export default function PedidoCard({ pedido, onEdit, onDelete }: PedidoCardProps
               <div>
                 <h4 className="text-sm font-medium mb-2">Observações</h4>
                 <div className="bg-muted p-3 rounded-md">
-                  <p className="text-sm whitespace-pre-wrap">{pedido.observacao}</p>
+                  <p className={`text-sm whitespace-pre-wrap ${pedido.status !== 'enviado' ? 'text-blue-600' : ''}`}>
+                    {pedido.observacao}
+                  </p>
                 </div>
               </div>
             )}

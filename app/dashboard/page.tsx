@@ -201,23 +201,24 @@ export default function Dashboard() {
     }
   }
 
-  const adicionarTransacao = async (novaTransacao: Transacao) => {
+  const adicionarTransacao = async (transacao: Transacao) => {
     try {
-      const transacaoCriada = await createFinanceiro({
-        tipo: novaTransacao.tipo,
-        valor: novaTransacao.valor,
-        data: novaTransacao.data,
-        descricao: novaTransacao.descricao,
+      const novaTransacao = await createFinanceiro({
+        tipo: transacao.tipo,
+        descricao: transacao.descricao,
+        valor: transacao.valor,
+        data: transacao.data,
         categoria: "geral"
       })
       
-      if (!transacaoCriada) {
+      if (!novaTransacao) {
         throw new Error('Transação não foi criada')
       }
-      setTransacoes([...transacoes, transacaoCriada])
+      
+      setTransacoes([...transacoes, novaTransacao])
       toast({
-        title: `${novaTransacao.tipo === "receita" ? "Receita" : "Despesa"} adicionada`,
-        description: `${novaTransacao.descricao} foi registrada com sucesso.`,
+        title: "Transação adicionada",
+        description: "A transação foi adicionada com sucesso.",
       })
     } catch (error) {
       console.error('Erro ao adicionar transação:', error)
@@ -247,29 +248,30 @@ export default function Dashboard() {
     }
   }
 
-  const editarTransacao = async (id: string, transacaoAtualizada: Transacao) => {
+  const editarTransacao = async (id: string, transacao: Transacao) => {
     try {
-      const transacaoEditada = await updateFinanceiro(id, {
-        tipo: transacaoAtualizada.tipo,
-        valor: transacaoAtualizada.valor,
-        data: transacaoAtualizada.data,
-        descricao: transacaoAtualizada.descricao
+      const transacaoAtualizada = await updateFinanceiro(id, {
+        tipo: transacao.tipo,
+        descricao: transacao.descricao,
+        valor: transacao.valor,
+        data: transacao.data,
+        categoria: "geral"
       })
       
-      if (!transacaoEditada) {
+      if (!transacaoAtualizada) {
         throw new Error('Transação não foi atualizada')
       }
       
-      setTransacoes(transacoes.map((t) => (t.id === id ? transacaoEditada : t)))
+      setTransacoes(transacoes.map((t) => (t.id === id ? transacaoAtualizada : t)))
       toast({
         title: "Transação atualizada",
         description: "A transação foi atualizada com sucesso.",
       })
     } catch (error) {
-      console.error('Erro ao editar transação:', error)
+      console.error('Erro ao atualizar transação:', error)
       toast({
         title: "Erro",
-        description: "Não foi possível editar a transação.",
+        description: "Não foi possível atualizar a transação.",
         variant: "destructive",
       })
     }
@@ -410,7 +412,7 @@ export default function Dashboard() {
                   </div>
                   <div className="px-1">
                     <p className="text-xs text-muted-foreground">Lucro</p>
-                    <p className="text-xs font-medium text-blue-600 whitespace-nowrap overflow-hidden" title={formatarValor(lucro)}>
+                    <p className={`text-xs font-medium ${lucro >= 0 ? 'text-blue-600' : 'text-red-600'} whitespace-nowrap overflow-hidden`} title={formatarValor(lucro)}>
                       {formatarValor(lucro)}
                     </p>
                   </div>

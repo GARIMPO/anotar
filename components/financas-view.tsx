@@ -52,7 +52,7 @@ export default function FinancasView({
 }: FinancasViewProps) {
   const [descricao, setDescricao] = useState("")
   const [valor, setValor] = useState("")
-  const [tipo, setTipo] = useState<"receita" | "despesa">("receita")
+  const [tipo, setTipo] = useState<"receita" | "despesa" | "fixa">("receita")
   const [data, setData] = useState<Date>(new Date())
   const [transacaoParaExcluir, setTransacaoParaExcluir] = useState<string | null>(null)
   const [transacaoParaEditar, setTransacaoParaEditar] = useState<Transacao | null>(null)
@@ -65,14 +65,14 @@ export default function FinancasView({
     .reduce((sum, t) => sum + (t.valor || 0), 0)
   
   const totalDespesas = transacoes
-    .filter((t) => t.tipo === "despesa")
+    .filter((t) => t.tipo === "despesa" || t.tipo === "fixa")
     .reduce((sum, t) => sum + (t.valor || 0), 0)
   
   const lucro = totalReceitas - totalDespesas
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!tipo || !descricao || !valor || !data) {
       toast({
         title: "Erro",
@@ -189,6 +189,7 @@ export default function FinancasView({
 
   const receitas = transacoes.filter((t) => t.tipo === "receita")
   const despesas = transacoes.filter((t) => t.tipo === "despesa")
+  const fixas = transacoes.filter((t) => t.tipo === "fixa")
 
   const resetarFormulario = () => {
     setDescricao("")
@@ -235,7 +236,9 @@ export default function FinancasView({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-blue-600">{formatarValor(lucro)}</p>
+            <p className={`text-2xl font-bold ${lucro >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+              {formatarValor(lucro)}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -250,13 +253,14 @@ export default function FinancasView({
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="tipo">Tipo de Transação</Label>
-                <Select value={tipo} onValueChange={(value: "receita" | "despesa") => setTipo(value)}>
+                <Select value={tipo} onValueChange={(value: "receita" | "despesa" | "fixa") => setTipo(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="receita">Receita</SelectItem>
                     <SelectItem value="despesa">Despesa</SelectItem>
+                    <SelectItem value="fixa">Despesa Fixa</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -318,10 +322,11 @@ export default function FinancasView({
 
         <div className="md:col-span-2">
           <Tabs defaultValue="todas" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="todas">Todas</TabsTrigger>
               <TabsTrigger value="receitas">Receitas</TabsTrigger>
               <TabsTrigger value="despesas">Despesas</TabsTrigger>
+              <TabsTrigger value="fixas">Fixas</TabsTrigger>
             </TabsList>
 
             <TabsContent value="todas" className="mt-4 space-y-4">
@@ -368,6 +373,21 @@ export default function FinancasView({
                 ))
               )}
             </TabsContent>
+            
+            <TabsContent value="fixas" className="mt-4 space-y-4">
+              {fixas.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">Nenhuma despesa fixa registrada.</p>
+              ) : (
+                fixas.map((transacao) => (
+                  <TransacaoItem 
+                    key={transacao.id} 
+                    transacao={transacao} 
+                    onDelete={confirmarExclusao} 
+                    onEdit={handleEditTransacao} 
+                  />
+                ))
+              )}
+            </TabsContent>
           </Tabs>
         </div>
       </div>
@@ -385,13 +405,14 @@ export default function FinancasView({
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-tipo">Tipo de Transação</Label>
-              <Select value={tipo} onValueChange={(value: "receita" | "despesa") => setTipo(value)}>
+              <Select value={tipo} onValueChange={(value: "receita" | "despesa" | "fixa") => setTipo(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="receita">Receita</SelectItem>
                   <SelectItem value="despesa">Despesa</SelectItem>
+                  <SelectItem value="fixa">Despesa Fixa</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -517,9 +538,9 @@ function TransacaoItem({ transacao, onDelete, onEdit }: TransacaoItemProps) {
                 <TrendingDown className="h-4 w-4 text-red-600" />
               }
             </div>
-            <div>
-              <p className="font-medium">{transacao.descricao}</p>
-              <p className="text-sm text-muted-foreground">
+          <div>
+            <p className="font-medium">{transacao.descricao}</p>
+            <p className="text-sm text-muted-foreground">
                 {formatarData(transacao.data)}
               </p>
               <p className="text-xs text-muted-foreground capitalize mt-1">
@@ -536,10 +557,10 @@ function TransacaoItem({ transacao, onDelete, onEdit }: TransacaoItemProps) {
             <div className="flex gap-1">
               <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleEdit}>
                 <Pencil className="h-3.5 w-3.5" />
-              </Button>
+            </Button>
               <Button variant="outline" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(transacao.id)}>
                 <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+            </Button>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 export interface Transacao {
   id: string
-  tipo: "receita" | "despesa"
+  tipo: "receita" | "despesa" | "fixa"
   descricao: string
   valor: number
   data: string // ISO string

@@ -135,7 +135,7 @@ export interface Database {
         Row: {
           id: string
           created_at: string
-          tipo: 'receita' | 'despesa'
+          tipo: 'receita' | 'despesa' | 'fixa'
           valor: number
           data: string
           descricao: string
@@ -144,7 +144,7 @@ export interface Database {
         Insert: {
           id?: string
           created_at?: string
-          tipo: 'receita' | 'despesa'
+          tipo: 'receita' | 'despesa' | 'fixa'
           valor: number
           data: string
           descricao: string
@@ -153,7 +153,7 @@ export interface Database {
         Update: {
           id?: string
           created_at?: string
-          tipo?: 'receita' | 'despesa'
+          tipo?: 'receita' | 'despesa' | 'fixa'
           valor?: number
           data?: string
           descricao?: string
