@@ -3,13 +3,18 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from 'next/link'
+import { isAuthenticated } from "@/lib/auth"
 
 export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    // Redireciona diretamente para o dashboard sem verificar login
-    router.push("/dashboard")
+    // Verificar se o usuário está autenticado
+    if (isAuthenticated()) {
+      router.push("/dashboard")
+    } else {
+      router.push("/login")
+    }
   }, [router])
 
   // Retorna um componente vazio pois será redirecionado
@@ -20,10 +25,10 @@ export default function Home() {
       
       <div className="flex flex-col gap-4">
         <Link 
-          href="/dashboard" 
+          href="/login" 
           className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
-          Acessar Dashboard
+          Acessar o Sistema
         </Link>
         
         <Link 
