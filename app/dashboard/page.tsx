@@ -13,14 +13,17 @@ import FinancasView from "@/components/financas-view"
 import EmailsView from "@/components/emails-view"
 import PedidoSearch from "@/components/pedido-search"
 import EmailsSalvosView from "@/components/emails-salvos-view"
+import TarefasView from "@/components/tarefas-view"
 import type { Pedido } from "@/types/pedido"
 import type { Transacao } from "@/types/financas"
 import type { Contato } from "@/types/contato"
+import type { Tarefa } from "@/types/tarefa"
 import { useRouter } from "next/navigation"
 import { 
   getPedidos, createPedido, updatePedido, deletePedido,
   getFinanceiro, createFinanceiro, updateFinanceiro, deleteFinanceiro,
-  getContatos, createContato, updateContato, deleteContato
+  getContatos, createContato, updateContato, deleteContato,
+  getTarefas, createTarefa, updateTarefa, deleteTarefa
 } from "@/services/supabase"
 
 export default function Dashboard() {
@@ -28,6 +31,7 @@ export default function Dashboard() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [transacoes, setTransacoes] = useState<Transacao[]>([])
   const [contatos, setContatos] = useState<Contato[]>([])
+  const [tarefas, setTarefas] = useState<Tarefa[]>([])
   const [loading, setLoading] = useState(true)
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -42,15 +46,17 @@ export default function Dashboard() {
     const loadInitialData = async () => {
       try {
         setLoading(true)
-        const [pedidosData, transacoesData, contatosData] = await Promise.all([
+        const [pedidosData, transacoesData, contatosData, tarefasData] = await Promise.all([
           getPedidos(),
           getFinanceiro(),
-          getContatos()
+          getContatos(),
+          getTarefas()
         ])
         
         setPedidos(pedidosData)
         setTransacoes(transacoesData)
         setContatos(contatosData)
+        setTarefas(tarefasData)
       } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error)
         toast({
@@ -341,6 +347,71 @@ export default function Dashboard() {
     }
   }
 
+  // Adicione funções para gerenciar tarefas
+  const adicionarTarefa = async (novaTarefa: { descricao: string, concluida: boolean }) => {
+    try {
+      const tarefaCriada = await createTarefa(novaTarefa)
+      
+      if (!tarefaCriada) {
+        throw new Error('Tarefa não foi criada')
+      }
+      
+      setTarefas([tarefaCriada, ...tarefas])
+      toast({
+        title: "Tarefa adicionada",
+        description: "A tarefa foi adicionada com sucesso.",
+      })
+    } catch (error) {
+      console.error('Erro ao adicionar tarefa:', error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar a tarefa.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const editarTarefa = async (id: string, dadosTarefa: { descricao?: string, concluida?: boolean }) => {
+    try {
+      const tarefaAtualizada = await updateTarefa(id, dadosTarefa)
+      
+      if (!tarefaAtualizada) {
+        throw new Error('Tarefa não foi atualizada')
+      }
+      
+      setTarefas(tarefas.map((t) => (t.id === id ? tarefaAtualizada : t)))
+      toast({
+        title: "Tarefa atualizada",
+        description: "A tarefa foi atualizada com sucesso.",
+      })
+    } catch (error) {
+      console.error('Erro ao atualizar tarefa:', error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar a tarefa.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const excluirTarefa = async (id: string) => {
+    try {
+      await deleteTarefa(id)
+      setTarefas(tarefas.filter((t) => t.id !== id))
+      toast({
+        title: "Tarefa excluída",
+        description: "A tarefa foi excluída com sucesso.",
+      })
+    } catch (error) {
+      console.error('Erro ao excluir tarefa:', error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir a tarefa.",
+        variant: "destructive",
+      })
+    }
+  }
+
   // Divide pedidos em grupos com base no status
   const pedidosEmAndamento = pedidos.filter((p) => p.status !== 'enviado')
   const pedidosConcluidos = pedidos.filter((p) => p.status === 'enviado')
@@ -421,7 +492,7 @@ export default function Dashboard() {
             </Card>
             <Button onClick={() => setActiveTab("emails")} className="w-full flex items-center justify-center gap-2">
               <Mail className="h-4 w-4" />
-              E-mails Salvos ({contatos.length})
+              E-mails ({contatos.length}) / Tarefas ({tarefas.length})
             </Button>
           </div>
         </div>
@@ -431,6 +502,7 @@ export default function Dashboard() {
             <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
             <TabsTrigger value="financas">Finanças</TabsTrigger>
             <TabsTrigger value="emails">E-mails</TabsTrigger>
+            <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pedidos" className="space-y-4">
@@ -470,6 +542,15 @@ export default function Dashboard() {
               onAdd={adicionarContato} 
               onEdit={atualizarContato}
               onDelete={excluirContato}
+            />
+          </TabsContent>
+
+          <TabsContent value="tarefas">
+            <TarefasView
+              tarefas={tarefas}
+              onAdd={adicionarTarefa}
+              onEdit={editarTarefa}
+              onDelete={excluirTarefa}
             />
           </TabsContent>
         </Tabs>

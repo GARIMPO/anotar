@@ -449,4 +449,66 @@ export async function deleteEmailSalvo(id: string) {
     console.error('Erro ao excluir email:', error)
     throw error
   }
+}
+
+// Funções para Tarefas
+export async function getTarefas() {
+  console.log('Buscando tarefas')
+  const { data, error } = await supabase
+    .from('tarefas')
+    .select('*')
+    .order('created_at', { ascending: false })
+  
+  if (error) {
+    console.error('Erro ao buscar tarefas:', error)
+    throw error
+  }
+  return data
+}
+
+export async function createTarefa(tarefa: { descricao: string, concluida?: boolean }) {
+  console.log('Criando tarefa:', tarefa)
+  const { data, error } = await supabase
+    .from('tarefas')
+    .insert({
+      descricao: tarefa.descricao,
+      concluida: tarefa.concluida || false
+    })
+    .select()
+    .single()
+  
+  if (error) {
+    console.error('Erro ao criar tarefa:', error)
+    throw error
+  }
+  return data
+}
+
+export async function updateTarefa(id: string, tarefa: { descricao?: string, concluida?: boolean }) {
+  console.log('Atualizando tarefa:', { id, tarefa })
+  const { data, error } = await supabase
+    .from('tarefas')
+    .update(tarefa)
+    .eq('id', id)
+    .select()
+    .single()
+  
+  if (error) {
+    console.error('Erro ao atualizar tarefa:', error)
+    throw error
+  }
+  return data
+}
+
+export async function deleteTarefa(id: string) {
+  console.log('Deletando tarefa:', id)
+  const { error } = await supabase
+    .from('tarefas')
+    .delete()
+    .eq('id', id)
+  
+  if (error) {
+    console.error('Erro ao deletar tarefa:', error)
+    throw error
+  }
 } 
